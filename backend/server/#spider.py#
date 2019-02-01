@@ -1,0 +1,26 @@
+import requests
+from bs4 import BeautifulSoup
+import re
+headers = {'User-agent': 'Mozilla/5.0'}
+
+#url = 'https://www.revolve.com/360cashmere-oneta-sweater/dp/360S-WK571/?d=Womens&page=1&lc=2&itrownum=1&itcurrpage=1&itview=01'
+#page = requests.get(url, headers=headers)
+#soup = BeautifulSoup(page.content, 'html.parser')
+#print(soup.find_all('span', class_="prices__retail", text=re.compile(r'\$')))
+
+def myspider(url):
+    page = requests.get(url, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    if self.url.find('revolve')!= -1:
+            print 'what is response'
+            print response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail')
+            if not response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail'):
+                print 'markdown'
+                current_price = json.loads(response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('div.prices__markdown').xpath('text()').extract()[0].replace(',','').strip('$'))
+            else:
+                print 'normal price'
+                current_price = json.loads(response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail').xpath('text()').extract()[0].replace(',','').strip('$'))
+            title = json.dumps(response.css('div.product-titles').css('h1.product-titles__name').xpath('text()').extract()[0].strip(' \n"')).replace('"','')
+            img = json.dumps(response.css('div.slideshow__options').css('div.slideshow__pager').css('a.js-primary-slideshow__pager-thumb').xpath('@data-zoom-image').extract()[0]).replace('"','')
+            brand = json.dumps(response.css('div.block--sm').css('a.u-color--black').css('span.u-font-primary').xpath('text()').extract()[0].strip(' \n')).replace("'","").replace('"','')
+            src = 'Revolve'

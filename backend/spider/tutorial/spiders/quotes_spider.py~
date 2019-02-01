@@ -1,0 +1,108 @@
+import smtplib
+import psycopg2
+import scrapy
+import simplejson
+import json
+from email.MIMEMultipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+class QuotesSpider(scrapy.Spider):
+    name = "quotes"
+    
+    def __init__(self, url, email, previous_price, first_time=False, *args, **kwargs):
+        super(QuotesSpider, self).__init__(*args, **kwargs)
+        self.url = url
+        self.start_urls = [url]
+        self.email = email
+        self.previous_price = float(previous_price)
+        self.first_time = first_time
+        self.user_agent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1"
+
+    def parse(self, response):
+        log = open('log.txt', 'a')
+        print 'dsadadsa'
+        if response is not None:
+           print 'response is not none'
+        if self.url.find('net-a-porter')!=-1:
+            print self.url
+            price_info = json.loads(response.css('div#main-product').css('div.container-title').css('nap-price').xpath('@price').extract()[0])
+            current_price = price_info['amount'] / price_info['divisor']
+        if self.url.find('shopbop')!=-1:
+            print self.url
+            current_price = json.loads(response.css('div#pdp-pricing').css('span.pdp-price').xpath('text()').extract()[0].strip('$').replace(',',''))
+        if self.url.find('saksfifthavenue')!=-1:
+            print self.url
+            current_price = json.loads(response.css('dd.product-pricing__price').xpath('span[@data-reactid="43"]').xpath('text()').extract()[0].replace(',',''))
+        if self.url.find('yoox')!= -1:
+            current_price = json.loads(response.css('div#mainContent').css('div#itemContent').css('span.font-bold').xpath('span[@itemprop="price"]').xpath('text()').extract()[0].replace(',','').replace('$','').lstrip())           
+        if self.url.find('revolve')!= -1:
+            print 'what is response'
+            print response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail')
+            if not response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail'):
+                print 'markdown'
+                current_price = json.loads(response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('div.prices__markdown').xpath('text()').extract()[0].replace(',','').strip('$'))
+            else:
+                print 'normal price'
+                current_price = json.loads(response.css('div.container').css('main#main-content').css('div.g').css('div.gc').css('div.prices').css('span.prices__retail').xpath('text()').extract()[0].replace(',','').strip('$'))
+            title = json.dumps(response.css('div.product-titles').css('h1.product-titles__name').xpath('text()').extract()[0].strip(' \n"')).replace('"','')
+            img = json.dumps(response.css('div.slideshow__options').css('div.slideshow__pager').css('a.js-primary-slideshow__pager-thumb').xpath('@data-zoom-image').extract()[0]).replace('"','')
+            brand = json.dumps(response.css('div.block--sm').css('a.u-color--black').css('span.u-font-primary').xpath('text()').extract()[0].strip(' \n')).replace("'","").replace('"','')
+            src = 'Revolve'
+#        global title,img,brand
+#        print ('revolve''s title: {}'.format(title))
+ #       print ('revolve''s img: {}'.format(img))
+        print ('brand: {}'.format(brand))
+  #      print current_price
+   #     print type(current_price)
+    #    print type(title)
+     #   print type(img)
+      #  print type(src)
+        if self.first_time:
+            print 'test1'
+            log.write('Initiated tracking %s for %s, initial price is $%0.2f\n' % (self.url, self.email, current_price))
+            log.close()
+            print 'test2'
+            yield {'current_price': current_price,
+                   'title': title,
+                   'brand': brand,
+                   'img': img,
+                   'src': src}
+
+            return
+
+        log.write('Checked %s for %s, current price is $%0.2f, previous price was $%0.2f\n' % \
+            (self.url, self.email, current_price, self.previous_price))
+        print 'test3'
+        if current_price < self.previous_price:
+            fromaddr = "donotreply@pricetracker.com"
+            toaddr = self.email
+            msg = MIMEMultipart()
+            msg['From'] = fromaddr
+            msg['To'] = toaddr
+            msg['Subject'] = "Your tracked item has a lower price now!"
+
+            body = "The item you tracked at %s \nnow has a lower price! \n\n" \
+            "The original price was $%d, now it is only $%d. \n\n" \
+            "Go ahead and check it out!" % (self.url, self.previous_price, current_price)
+            msg.attach(MIMEText(body, 'plain'))
+            print body
+            server = smtplib.SMTP('localhost')
+            text = msg.as_string()
+            server.sendmail(fromaddr, toaddr, text)
+            server.quit()
+            log.write('email sent to %s\n' % self.email)
+
+            conn = psycopg2.connect(
+                database="postgres",
+                user="tx17",
+                password="cloudcomputing",
+                host="pricetracker.ccao5jndini9.us-east-1.rds.amazonaws.com",
+                port = "5432"
+            )
+            cur = conn.cursor()
+            cur.execute("UPDATE urls SET price=%0.2f, title='%s', brand='%s', img='%s', src='%s' WHERE email='%s' AND url='%s'" % (current_price, title, brand, img, src, self.email, self.url))
+            conn.commit()
+            log.write('Updated database\n')
+
+        log.close() 
+#        myrecord.close()

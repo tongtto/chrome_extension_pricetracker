@@ -1,0 +1,72 @@
+/*.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}*/
+
+
+/*appBar: {
+  position: 'relative',
+}
+
+icon: {
+  marginRight: theme.spacing.unit * 2,
+}
+heroUnit: {
+  backgroundColor: theme.palette.background.paper,
+}
+
+heroContent: {
+  maxWidth: 600,
+  margin: '0 auto',
+  padding: `${theme.spacing.unit * 8}px 0 ${theme.spacing.unit * 6}px`,
+}
+
+heroButtons: {
+  marginTop: theme.spacing.unit * 4,
+}
+
+layout: {
+  width: 'auto',
+  marginLeft: theme.spacing.unit * 3,
+  marginRight: theme.spacing.unit * 3,
+  [theme.breakpoints.up(1100 + theme.spacing.unit * 3 * 2)]: {
+    width: 1100,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  }
+}
+
+cardGrid: {
+  padding: `${theme.spacing.unit * 8}px 0`,
+},
+cardMedia: {
+  paddingTop: '56.25%', // 16:9
+},
+footer: {
+  backgroundColor: theme.palette.background.paper,
+  padding: theme.spacing.unit * 6,
+},*/

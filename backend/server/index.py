@@ -1,0 +1,129 @@
+from flask import Flask, request
+from subprocess import call
+from flask_cors import CORS
+import psycopg2
+import json
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/hello_tong', methods=['GET'])
+def func():
+    return '<h1>tongtong zui mei!</h1>'
+
+@app.route('/track_page', methods=['POST'])
+def track_page():
+    data = json.loads(request.data)
+    email = data['email']
+    url = data['url']
+    
+    price = -1
+    title = ''
+    brand = ''
+    img = ''
+    src = ''
+    '''
+    status = call("rm -f output.json && scrapy crawl quotes -a url='%s' -a email='%s' -a previous_price=0 -a first_time=True -o output.json" % (url, email), cwd="/home/ec2-user/spider", shell=True)
+    f = open("/home/ec2-user/spider/output.json", "r")
+    #contents = f.read()
+    
+    try:
+        print ('contents here')
+        print (contents)
+        contents = json.loads(contents)
+        print ('contents: {}').format(contents)
+        price = float(contents[0]['current_price'])
+        title = contents[0]['title']
+        #        print ('title: {}').format(title)
+        brand= contents[0]['brand']
+        #      print ('brand: {}').format(brand)
+        img = contents[0]['img']
+        #    print ('img: {}').format(img)
+        src = contents[0]['src']
+        #  print ('src :{}').format(src)
+    except Exception, e:
+        print 'hehhehheehhe'
+        print e
+        pass
+'''
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO urls (email, url, price, title, brand, img, src) VALUES ('%s', '%s', %s, '%s', '%s', '%s', '%s');" % (email, url, 'NULL' if price == -1 else str(price), title, brand, img, src));
+        conn.commit()
+        conn.close()
+    except Exception, e:
+        print str(e)
+        return 'error'
+    return 'success'
+
+@app.route('/delete_page', methods=['POST'])
+def delete_page():
+    data = json.loads(request.data)
+    email = data['email']
+    url = data['url']
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        print email, url
+        cur.execute("DELETE FROM urls WHERE email='%s' AND url='%s';" % (email, url));
+        conn.commit()
+        conn.close()
+    except Exception, e:
+        print str(e)
+        return 'error'
+    return 'success'
+
+@app.route('/check_if_tracked', methods=['POST'])
+def check_if_tracked():
+    print ('request.data: {}').format(request.data)
+    data = json.loads(request.data)
+    email = data['email']
+    url = data['url']
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM urls WHERE email='%s' AND url='%s';" % (email, url));
+        rows = cur.fetchall()
+        if len(rows) > 0:
+            return 'yes'
+        conn.commit()
+        conn.close()
+    except Exception, e:
+        print str(e)
+        return 'no'
+    return 'no'
+
+@app.route('/get_all_tracked', methods=['POST'])
+def get_all_tracked_tracked():
+    data = json.loads(request.data)
+    email = data['email']
+    
+    result = []
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT url, price, title, brand, img, src FROM urls WHERE email='%s';" % email);
+        rows = cur.fetchall()
+        for row in rows:
+            result.append({'url':row[0], 'price':row[1], 'title':row[2], 'brand':row[3], 'img':row[4], 'src':row[5]})
+        conn.commit()
+        conn.close()
+    except Exception, e:
+        print str(e)
+        return ''
+    return json.dumps(result)
+
+def get_conn():
+    return psycopg2.connect(
+        database="postgres",
+        user="tx17",
+        password="cloudcomputing",
+        host="pricetracker.ccao5jndini9.us-east-1.rds.amazonaws.com",
+        port = "5432"
+    )
+'''
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port='5000', ssl_context=('cert.pem', 'key.pem'))
+''' 

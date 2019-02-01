@@ -1,0 +1,24 @@
+{
+  "short_name": "React App",
+  "name": "React Extension",
+  "manifest_version": 2,
+  "browser_action": {
+  	"default_popup": "index.html",
+    "default_title": "React Ext",
+    "default_icon" : {
+      "19": "icon1.png",
+      "38": "icon2.png"
+    }
+    
+  },
+	"background": {
+	"scripts": ["background.js"]
+	},
+	"content_scripts": [
+	{
+	  "matches": ["<all_urls>"],
+	  "js": ["contentScript.js"]
+	}
+	],  
+  "version": "1.0"
+}

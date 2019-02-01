@@ -1,0 +1,53 @@
+/* global chrome */
+import React, { Component } from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+class App extends Component {
+    constructor(props){
+	super(props);
+//	this.state = {
+//	    tracked : false
+//	}
+	this.handleClick = this.handleClick.bind(this);
+    }
+    handleClick(){
+	console.log('press button');
+	chrome.identity.getProfileUserInfo(function(info) {
+            var email = info.email;
+            console.log('email: ',email);
+            console.log('info: ', info);
+            chrome.tabs.query({'active': true, 'currentWindow': true}, function (tabs) {
+                console.log('tabs:', tabs);
+                var url = tabs[0].url;
+                console.log(url); 
+		//var xhr = new XMLHttpRequest();
+		//var self = this;
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "http://34.204.12.200:5000/track_page", true);
+                xhr.onreadystatechange = function(e) {
+                    if (xhr.readyState === 4) {
+			console.log(xhr.responseText);
+		    }
+		}
+                var params = {'email': email, 'url': url};
+                xhr.send(JSON.stringify(params))
+	    });
+	});
+    }
+      
+    render() {
+	console.log('test');
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h1 className="App-title">price tracker</h1>
+        </header>
+	    <button id="the button" onClick={this.handleClick}>track this page</button>
+      </div>
+    );
+  }
+}
+
+export default App;
