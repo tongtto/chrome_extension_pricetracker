@@ -68,7 +68,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                     var url = tabs[0].url;
                     console.log(url); 
                     var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "http://34.204.12.200:5000/track_page", true);
+                    xhr.open("POST", "https://tongspricetracker.com/track_page", true);
                     console.log('readyState before:',xhr.readyState);
                     console.log('status before:',xhr.status);
                     // xhr.onreadystatechange = function(e) {
@@ -88,7 +88,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                                 var opt2 = {
                                     type: "basic",
                                     title: "price tracker",
-                                    message: "track this item successfully!", 
+                                    message: "track this item successfully!",
                                     iconUrl: "sign check.png"
                                 }
                                 console.log('readyState:',xhr.readyState);

@@ -19,7 +19,7 @@ chrome.extension.sendRequest({}, function(response) {
         ifenable: enable, 
         method: 'POST',
         action: 'xhttp',
-        url: 'http://34.204.12.200:5000/check_if_tracked',
+        url: 'https://tongspricetracker.com/check_if_tracked',
         data:
                 {email : logged_in_user,
                 url : document.location.href}
